@@ -14,12 +14,12 @@ function DataLoaderRaw:__init(opt)
   local coco_json = utils.getopt(opt, 'coco_json', '')
 
   -- load the json file which contains additional information about the dataset
-  print('DataLoaderRaw loading images from folder: ', opt.folder_path)
+  -- print('DataLoaderRaw loading images from folder: ', opt.folder_path)
     
   self.files = {}
   self.ids = {}
   if string.len(opt.coco_json) > 0 then
-    print('reading from ' .. opt.coco_json)
+    -- print('reading from ' .. opt.coco_json)
     -- read in filenames from the coco-style json file
     self.coco_annotation = utils.read_json(opt.coco_json)
     for k,v in pairs(self.coco_annotation.images) do
@@ -29,7 +29,7 @@ function DataLoaderRaw:__init(opt)
     end
   else
     -- read in all the filenames from the folder
-    print('listing all images in directory ' .. opt.folder_path)
+    -- print('listing all images in directory ' .. opt.folder_path)
     local function isImage(f)
       local supportedExt = {'.jpg','.JPEG','.JPG','.png','.PNG','.ppm','.PPM'}
       for _,ext in pairs(supportedExt) do
@@ -50,7 +50,7 @@ function DataLoaderRaw:__init(opt)
   end
 
   self.N = #self.files
-  print('DataLoaderRaw found ' .. self.N .. ' images')
+  -- print('DataLoaderRaw found ' .. self.N .. ' images')
 
   self.iterator = 1
 end

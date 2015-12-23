@@ -44,7 +44,7 @@ end
 
 function layer:createClones()
   -- construct the net clones
-  print('constructing clones inside the LanguageModel')
+  -- print('constructing clones inside the LanguageModel')
   self.clones = {self.core}
   self.lookup_tables = {self.lookup_table}
   for t=2,self.seq_length+2 do

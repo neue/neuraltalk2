@@ -1,0 +1,2 @@
+#!/bin/bash
+th downval.lua -model ./model/model_id1-501-1448236541.t7_cpu.t7 -image_folder ./images -num_images -1 -gpuid -1 -url $1

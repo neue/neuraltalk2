@@ -9,7 +9,7 @@ require 'misc.DataLoader'
 require 'misc.DataLoaderRaw'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
-
+local http = require("socket.http")
 
 -------------------------------------------------------------------------------
 -- Input arguments and options
@@ -35,6 +35,7 @@ cmd:option('-beam_size', 2, 'used when sample_max = 1, indicates number of beams
 cmd:option('-temperature', 1.0, 'temperature when sampling from distributions (i.e. when sample_max = 0). Lower = "safer" predictions.')
 -- For evaluation on a folder of images:
 cmd:option('-image_folder', '', 'If this is nonempty then will predict on the images in this folder path')
+cmd:option('-url', '', 'If this is nonempty then will predict on the images in this folder path')
 cmd:option('-image_root', '', 'In case the image paths have to be preprended with a root path to an image folder')
 -- For evaluation on MSCOCO images from some split:
 cmd:option('-input_h5','','path to the h5file containing the preprocessed dataset. empty = fetch from model checkpoint.')
@@ -62,6 +63,16 @@ if opt.gpuid >= 0 then
   cutorch.manualSeed(opt.seed)
   cutorch.setDevice(opt.gpuid + 1) -- note +1 because lua is 1-indexed
 end
+
+-------------------------------------------------------------------------------
+-- Download our image
+-------------------------------------------------------------------------------
+local body, code = http.request(opt.url)
+if not body then error(code) end
+
+local f = assert(io.open('./images/whatdoisee.jpg', 'wb')) -- open in "binary" mode
+f:write(body)
+f:close()
 
 -------------------------------------------------------------------------------
 -- Load the model checkpoint to evaluate
@@ -144,11 +155,12 @@ local function eval_split(split, evalopt)
       if opt.dump_images == 1 then
         -- dump the raw image to vis/ folder
         local cmd = 'cp "' .. path.join(opt.image_root, data.infos[k].file_path) .. '" vis/imgs/img' .. #predictions .. '.jpg' -- bit gross
-        print(cmd)
+        -- print(cmd)
         os.execute(cmd) -- dont think there is cleaner way in Lua
       end
       if verbose then
-        print(string.format('image %s: %s', entry.image_id, entry.caption))
+        -- print(string.format('image %s: %s', entry.image_id, entry.caption))
+        print(string.format(entry.caption))
       end
     end
 
@@ -156,7 +168,7 @@ local function eval_split(split, evalopt)
     local ix0 = data.bounds.it_pos_now
     local ix1 = math.min(data.bounds.it_max, num_images)
     if verbose then
-      print(string.format('evaluating performance... %d/%d (%f)', ix0-1, ix1, loss))
+      -- print(string.format('evaluating performance... %d/%d (%f)', ix0-1, ix1, loss))
     end
 
     if data.bounds.wrapped then break end -- the split ran out of data, lets break out
@@ -172,9 +184,9 @@ local function eval_split(split, evalopt)
 end
 
 local loss, split_predictions, lang_stats = eval_split(opt.split, {num_images = opt.num_images})
-print('loss: ', loss)
+-- print('loss: ', loss)
 if lang_stats then
-  print(lang_stats)
+  -- print(lang_stats)
 end
 
 if opt.dump_json == 1 then
